@@ -77,15 +77,41 @@ public class Board extends JPanel {
 
 	public Boolean select(Integer x, Integer y) {
 		selected = new Point(x, y);
-		if (map.get(x).get(y).getNum() == -1) {
+		if (getElement(x, y).getNum() == -1) {
 			return false;
 		}
-		reveal(x, y);
+		dig(x, y);
 		return true;
 	}
 	
-	private void reveal(Integer x, Integer y) {
-		
+	private void dig(Integer x, Integer y) {
+		getElement(x, y).show();
+		if (getElement(x, y).getNum() == 0) {
+			boolean leftOk = x > 0;
+			boolean rightOk = x < sizeX - 1;
+			boolean topOk = y > 0;
+			boolean bottomOk = y < sizeY - 1;
+			if (leftOk) {
+				if (getElement(x - 1, y).getHidden())
+					dig(x - 1, y);
+				if (topOk && getElement(x - 1, y - 1).getHidden()) 
+					dig(x - 1, y - 1);
+				if (bottomOk && getElement(x - 1, y + 1).getHidden())
+					dig(x - 1, y + 1);
+			}
+			if (rightOk) {
+				if (getElement(x + 1, y).getHidden())
+					dig(x + 1, y);
+				if (topOk && getElement(x + 1, y - 1).getHidden()) 
+					dig(x + 1, y - 1);
+				if (bottomOk && getElement(x + 1, y + 1).getHidden())
+					dig(x + 1, y + 1);
+			}
+			if (topOk && getElement(x, y - 1).getHidden())
+				dig(x, y - 1);
+			if (bottomOk && getElement(x, y + 1).getHidden())
+				dig(x, y + 1);
+		}
 	}
 	
 	public Boolean check() {
@@ -99,8 +125,18 @@ public class Board extends JPanel {
 		return count == nbBombs;
 	}
 	
+	public void reset() {
+		for (ArrayList<Element> row : map)
+			for (Element el : row)
+				el.hide();
+	}
+	
 	public ArrayList<ArrayList<Element>> getMap() {
 		return map;
+	}
+	
+	public Element getElement(Integer x, Integer y) {
+		return map.get(x).get(y);
 	}
 	
 	public void paintComponent(Graphics g) {
