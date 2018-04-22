@@ -42,7 +42,7 @@ public class Board extends JPanel {
 		for (int i = 0; i < nbBombs; i++) {
 			int x1 = (int) Math.floor(Math.random() * sizeX);
 			int y1 = (int) Math.floor(Math.random() * sizeY);
-			map.get(x1).get(y1).setNum(-1);
+			getElement(x1, y1).setNum(-1);
 		}
 		for (ListIterator<ArrayList<Element>> rowI = map.listIterator(); rowI.hasNext(); ) {
 			ArrayList<Element> row = rowI.next();
@@ -136,7 +136,13 @@ public class Board extends JPanel {
 	}
 	
 	public Element getElement(Integer x, Integer y) {
-		return map.get(x).get(y);
+		return map.get(y).get(x);
+	}
+	
+	public Integer eval(Integer x, Integer y) {
+		if (x < 0 || x > sizeX - 1 || y < 0 || y > sizeY - 1)
+			return -2;
+		return getElement(x, y).getHidden() ? -1 : getElement(x, y).getNum();
 	}
 	
 	public void paintComponent(Graphics g) {

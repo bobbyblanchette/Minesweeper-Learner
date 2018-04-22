@@ -13,7 +13,7 @@ public class MainFrame extends JFrame implements Runnable {
 
 	public MainFrame() {
 		super();
-		board = new Board(sizeX, sizeY, 50);
+		board = new Board(sizeX, sizeY, 25);
 		this.setContentPane(board);
 		this.setTitle("Minesweeper Learner");
 		this.setSize(new Dimension(518,541));
@@ -28,41 +28,30 @@ public class MainFrame extends JFrame implements Runnable {
 		thread.start();
 	}
 	
-	public int getMapVal(int r, int c) {
-		if (r < 0 || c < 0 || r >= sizeX || c >= sizeY) {
-			return -2;
-		}
-		if (board.getElement(r, c).getHidden()) {
-			return -1;
-		}
-		return board.getElement(r, c).getNum();
-	}
-	
 	@Override
 	public void run() {
 		gen = new Generation(8, 4, 1, 1);
 		while (true) {
-			List<Net> nets = gen.pop;
+			List<Net> nets = gen.getPopulation();
 			float totalFitness = 0;
 			for (Net net : nets) {
 				float fitness = 0;
-				boolean playing = true;
-				while (playing) {
+				while (true) {
 					float[][] danger = new float[16][16];
 					for (int r = 0; r < danger.length; r++) {
 						for (int c = 0; c < danger[r].length; c++) {
-							if (!board.getMap().get(r).get(c).getHidden()) {
+							if (!board.getElement(c, r).getHidden()) {
 								danger[r][c] = Integer.MAX_VALUE;
 							} else {
 								float[] input = new float[8];
-								input[0] = getMapVal(r - 1, c - 1);
-								input[1] = getMapVal(r - 1, c);
-								input[2] = getMapVal(r - 1, c + 1);
-								input[3] = getMapVal(r, c - 1);
-								input[4] = getMapVal(r, c + 1);
-								input[5] = getMapVal(r + 1, c - 1);
-								input[6] = getMapVal(r + 1, c);
-								input[7] = getMapVal(r + 1, c + 1);
+								input[0] = board.eval(r - 1, c - 1);
+								input[1] = board.eval(r - 1, c);
+								input[2] = board.eval(r - 1, c + 1);
+								input[3] = board.eval(r, c - 1);
+								input[4] = board.eval(r, c + 1);
+								input[5] = board.eval(r + 1, c - 1);
+								input[6] = board.eval(r + 1, c);
+								input[7] = board.eval(r + 1, c + 1);
 								float d = net.getOutput(input)[0];
 								danger[r][c] = d;
 							}
@@ -83,9 +72,9 @@ public class MainFrame extends JFrame implements Runnable {
 					if (board.select(lowR, lowC)) {
 						fitness += 1;
 					} else {
-						playing = false;
 						net.fitness = fitness;
 						totalFitness += fitness;
+						break;
 					}
 					if (board.check()) {
 						System.exit(1);

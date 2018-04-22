@@ -4,14 +4,14 @@ import java.util.List;
 import java.util.PriorityQueue;
 
 public class Generation {
-	public int popSize = 125;
-	public int purgeRate = 50;
-	public List<Net> pop = new ArrayList<>();
+	private int populationSize = 125;
+	private int purgeRate = 50;
+	private List<Net> population = new ArrayList<>();
 
 	public Generation(int inputWidth, int hiddenWidth, int hiddenDepth, int output) {
-		for (int i = 0; i < popSize; i++) {
+		for (int i = 0; i < populationSize; i++) {
 			Net network = new Net(inputWidth, hiddenWidth, hiddenDepth, output);
-			pop.add(network);
+			population.add(network);
 		}
 	}
 
@@ -21,21 +21,21 @@ public class Generation {
 	}
 
 	private void breed() {
-		int numChildren = popSize - pop.size();
-		Collections.sort(pop);
-		for (int i = pop.size() - 1; numChildren >= 0; i--) {
-			pop.add(new Net(pop.get(i)));
+		int numChildren = populationSize - population.size();
+		Collections.sort(population);
+		for (int i = population.size() - 1; numChildren >= 0; i--) {
+			population.add(new Net(population.get(i)));
 			numChildren--;
 		}
-		for (int i = 0; i < pop.size(); i++) {
-			pop.get(i).mutate();
+		for (int i = 0; i < population.size(); i++) {
+			population.get(i).mutate();
 		}
 	}
 
 	private void purge() {
 		PriorityQueue<Net> deathsRow = new PriorityQueue(purgeRate, Collections.reverseOrder());
-		for (int i = 0; i < pop.size(); i++) {
-			Net defendent = pop.get(i);
+		for (int i = 0; i < population.size(); i++) {
+			Net defendent = population.get(i);
 			if (deathsRow.size() < purgeRate) {
 				deathsRow.add(defendent);
 			} else if (defendent.compareTo(deathsRow.peek()) == -1) {
@@ -44,7 +44,31 @@ public class Generation {
 			}
 		}
 		while (deathsRow.size() > 0) {
-			pop.remove(deathsRow.poll());
+			population.remove(deathsRow.poll());
 		}
+	}
+
+	public int getPopulationSize() {
+		return populationSize;
+	}
+
+	public void setPopulationSize(int populationSize) {
+		this.populationSize = populationSize;
+	}
+
+	public int getPurgeRate() {
+		return purgeRate;
+	}
+
+	public void setPurgeRate(int purgeRate) {
+		this.purgeRate = purgeRate;
+	}
+
+	public List<Net> getPopulation() {
+		return population;
+	}
+
+	public void setPopulation(List<Net> population) {
+		this.population = population;
 	}
 }

@@ -36,4 +36,8 @@ public class Element {
 	public void switchFlag() {
 		this.flagged = !this.flagged;
 	}
+	
+	public String toString() {
+		return this.num.toString();
+	}
 }
