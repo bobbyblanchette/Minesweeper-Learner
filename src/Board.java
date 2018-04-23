@@ -44,29 +44,33 @@ public class Board extends JPanel {
 			int y1 = (int) Math.floor(Math.random() * sizeY);
 			getElement(x1, y1).setNum(-1);
 		}
-		for (ListIterator<ArrayList<Element>> rowI = map.listIterator(); rowI.hasNext(); ) {
+		for (CustomListIterator<ArrayList<Element>> rowI = new CustomListIterator<>(map.listIterator()); rowI.hasNext(); ) {
 			ArrayList<Element> row = rowI.next();
-			int y = 0;
-			for (ListIterator<Element> colI = row.listIterator(); colI.hasNext(); y = colI.nextIndex()) {
+			for (CustomListIterator<Element> colI = new CustomListIterator<>(row.listIterator()); colI.hasNext();) {
 				Element el = colI.next();
 				
 				if (el.getNum() != -1) {
 					int num = 0;
-					if (colI.hasPrevious() && row.get(colI.previousIndex()).getNum() == -1
-							|| colI.hasNext() && row.get(colI.nextIndex()).getNum() == -1)
+					if (colI.hasPrevious() && row.get(colI.previousIndex()).getNum() == -1)
+						num++;
+					if (colI.hasNext() && row.get(colI.nextIndex()).getNum() == -1)
 						num++;
 					if (rowI.hasPrevious()) {
 						ArrayList<Element> prevRow = map.get(rowI.previousIndex());
-						if (prevRow.get(y).getNum() == -1
-								|| colI.hasPrevious() && prevRow.get(colI.previousIndex()).getNum() == -1
-								|| colI.hasNext() && prevRow.get(colI.nextIndex()).getNum() == -1)
+						if (prevRow.get(colI.currentIndex()).getNum() == -1)
+							num++;
+						if (colI.hasPrevious() && prevRow.get(colI.previousIndex()).getNum() == -1)
+							num++;
+						if (colI.hasNext() && prevRow.get(colI.nextIndex()).getNum() == -1)
 							num++;
 					}
 					if (rowI.hasNext()) {
 						ArrayList<Element> nextRow = map.get(rowI.nextIndex());
-						if (nextRow.get(y).getNum() == -1
-								|| colI.hasPrevious() && nextRow.get(colI.previousIndex()).getNum() == -1
-								|| colI.hasNext() && nextRow.get(colI.nextIndex()).getNum() == -1)
+						if (nextRow.get(colI.currentIndex()).getNum() == -1)
+							num++;
+						if (colI.hasPrevious() && nextRow.get(colI.previousIndex()).getNum() == -1)
+							num++;
+						if (colI.hasNext() && nextRow.get(colI.nextIndex()).getNum() == -1)
 							num++;
 					}
 					el.setNum(num);
@@ -169,7 +173,9 @@ public class Board extends JPanel {
 			for (int c = 0; c < sizeY; c++) {
 				Element e = row.get(c);
 				if (!e.getHidden()) {
-					if (e.getNum() == 0) {
+					if (e.getNum() == -1) {
+						g.setColor(Color.BLACK);
+					} else if (e.getNum() == 0) {
 						g.setColor(Color.DARK_GRAY);
 					} else if (e.getNum() == 1) {
 						g.setColor(Color.BLUE);
@@ -178,7 +184,7 @@ public class Board extends JPanel {
 					} else if (e.getNum() == 3) {
 						g.setColor(Color.RED);
 					} else {
-						g.setColor(Color.BLACK);
+						g.setColor(Color.MAGENTA);
 					}
 					int x = c * w / sizeX + w / (2 * sizeX) - 2;
 					int y = (r + 1) * h / sizeY - h / (2 * sizeY) + 5;
@@ -201,5 +207,43 @@ public class Board extends JPanel {
 		g.drawLine(selected.x* w/sizeX, (selected.y+1) * h/sizeY, (selected.x+1)* w/sizeX, (selected.y+1) * h/sizeY);
 		
 		repaint();
+	}
+	
+	public class CustomListIterator<T> implements ListIterator<T> {
+
+	    private final ListIterator<T> underlying;
+
+	    public CustomListIterator(ListIterator<T> underlying) {
+	        this.underlying = underlying;
+	    }
+
+	    
+	    @Override 
+	    public boolean hasPrevious() {
+	    	underlying.previous();
+	    	boolean hasPrevious = underlying.hasPrevious();
+	    	underlying.next();
+	    	return hasPrevious;
+	    }
+	    
+	    @Override 
+	    public int previousIndex() {
+	    	underlying.previous();
+	    	int previousIndex = underlying.previousIndex();
+	    	underlying.next();
+	    	return previousIndex;
+	    }
+	    
+	    public int currentIndex() {
+	    	return underlying.previousIndex();
+	    }
+	    
+	    @Override public boolean hasNext() {return underlying.hasNext();}
+	    @Override public T next() {return underlying.next(); }
+	    @Override public T previous() {return underlying.previous();}
+	    @Override public int nextIndex() {return underlying.nextIndex();}
+	    @Override public void remove() { underlying.remove();}
+	    @Override public void set(T o) {underlying.set(o);}
+	    @Override public void add(T o) {underlying.add(o);}
 	}
 }

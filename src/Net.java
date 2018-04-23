@@ -1,35 +1,20 @@
 import java.util.Random;
 
 public class Net implements Comparable<Net> {
-	float fitness = 0;
-	int inputSize;
-	int hiddenWidth;
-	int hiddenDepth;
-	int outputWidth;
+	private int inputSize = 8;
+	private int hiddenWidth = 6;
+	private int hiddenDepth = 2;
+	private int outputWidth = 1;
+	Float fitness = 0f;
 	Neuron[][] net;
-	Random randy = new Random();
+	Random rand = new Random();
+	int wins = 0;
 
 	public Net() {
-		inputSize = 9;
-		hiddenWidth = 3;
-		hiddenDepth = 3;
-		outputWidth = 1;
-		createNetwork();
-	}
-
-	public Net(int inputDepth, int hiddenWidth, int hiddenDepth, int outputDepth) {
-		this.inputSize = inputDepth;
-		this.hiddenWidth = hiddenWidth;
-		this.hiddenDepth = hiddenDepth;
-		this.outputWidth = outputDepth;
 		createNetwork();
 	}
 
 	public Net(Net p) {
-		inputSize = p.inputSize;
-		hiddenWidth = p.hiddenWidth;
-		hiddenDepth = p.hiddenDepth;
-		outputWidth = p.outputWidth;
 		net = new Neuron[p.net.length][0];
 		for (int r = 0; r < net.length; r++) {
 			net[r] = new Neuron[p.net[r].length];
@@ -37,6 +22,21 @@ public class Net implements Comparable<Net> {
 				net[r][c] = new Neuron(p.net[r][c]);
 			}
 		}
+		wins = p.wins;
+	}
+	
+	public Net(Net p1, Net p2) {
+		net = new Neuron[hiddenDepth + 1][0];
+		for (int r = 0; r < net.length; r++) {
+			net[r] = new Neuron[p1.net[r].length];
+			for (int c = 0; c < net[r].length; c++) {
+				if (p1.fitness / p1.fitness + p2.fitness > rand.nextFloat())
+					net[r][c] = new Neuron(p1.net[r][c]);
+				else
+					net[r][c] = new Neuron(p2.net[r][c]);
+			}
+		}
+		wins = Math.max(p1.wins, p2.wins);
 	}
 
 	private void createNetwork() {
@@ -58,8 +58,8 @@ public class Net implements Comparable<Net> {
 	}
 
 	public void mutate() {
-		int r = randy.nextInt(hiddenDepth + 1);
-		int c = randy.nextInt(net[r].length);
+		int r = rand.nextInt(hiddenDepth + 1);
+		int c = rand.nextInt(net[r].length);
 		net[r][c].mutate();
 	}
 
@@ -88,14 +88,21 @@ public class Net implements Comparable<Net> {
 		}
 		return output;
 	}
+	
+	public void newRand() {
+		this.rand = new Random();
+		for (Neuron[] nn : net) {
+			for (Neuron n : nn) {
+				n.newRand();
+			}
+		}
+	}
 
 	public int compareTo(Net other) {
-		if (fitness == other.fitness) {
-			return 0;
-		}
-		if (fitness > other.fitness) {
-			return 1;
-		}
-		return -1;
+		return Float.compare(fitness, other.fitness);
+	}
+	
+	public String toString() {
+		return Float.toString(fitness);
 	}
 }

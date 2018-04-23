@@ -2,16 +2,27 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Random;
 
 public class Generation {
-	private int populationSize = 125;
-	private int purgeRate = 50;
+	private int populationSize = 10;
+	private int purgeRate = 3;
+	private float crossoverRate = 0.8f;
+	private float mutationRate = 0.3f;
 	private List<Net> population = new ArrayList<>();
+	private Random rand = new Random();
 
-	public Generation(int inputWidth, int hiddenWidth, int hiddenDepth, int output) {
+	public Generation() {
 		for (int i = 0; i < populationSize; i++) {
-			Net network = new Net(inputWidth, hiddenWidth, hiddenDepth, output);
+			Net network = new Net();
 			population.add(network);
+		}
+	}
+	
+	public Generation(Net net) {
+		for (int i = 0; i < populationSize; i++) {
+			net.newRand();
+			population.add(net);
 		}
 	}
 
@@ -23,24 +34,27 @@ public class Generation {
 	private void breed() {
 		int numChildren = populationSize - population.size();
 		Collections.sort(population);
+		
 		for (int i = population.size() - 1; numChildren >= 0; i--) {
-			population.add(new Net(population.get(i)));
+			if (rand.nextFloat() < crossoverRate)
+				population.add(new Net(population.get(i), population.get(i - 1)));
+			else
+				population.add(new Net(population.get(i)));
 			numChildren--;
 		}
-		for (int i = 0; i < population.size(); i++) {
-			population.get(i).mutate();
-		}
+		for (Net net : population)
+			if (rand.nextFloat() < mutationRate)
+					net.mutate();
 	}
 
 	private void purge() {
 		PriorityQueue<Net> deathsRow = new PriorityQueue(purgeRate, Collections.reverseOrder());
-		for (int i = 0; i < population.size(); i++) {
-			Net defendent = population.get(i);
+		for (Net net : population) {
 			if (deathsRow.size() < purgeRate) {
-				deathsRow.add(defendent);
-			} else if (defendent.compareTo(deathsRow.peek()) == -1) {
+				deathsRow.add(net);
+			} else if (net.compareTo(deathsRow.peek()) == -1) {
 				deathsRow.poll();
-				deathsRow.add(defendent);
+				deathsRow.add(net);
 			}
 		}
 		while (deathsRow.size() > 0) {
