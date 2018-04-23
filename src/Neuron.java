@@ -1,12 +1,12 @@
 import java.util.Random;
 
 public class Neuron {
-	Random rand = new Random();
-	int width = 0;
+	private Random rand = new Random();
 	private final float initialWeightMax = 5;
-	final float delta = 2f;
-	float[] weight;
-	float val;
+	private final float delta = 2f;
+	private float[] weight;
+	private float val;
+	private int width = 0;
 
 	public Neuron() {
 		this(0);
@@ -30,7 +30,6 @@ public class Neuron {
 	}
 
 	public void mutate() {
-		//int w = rand.nextInt(weight.length);
 		for (int w = 0; w < weight.length; w++)
 			weight[w] += delta * (rand.nextBoolean() ? 1 : -1);
 	}
@@ -47,5 +46,33 @@ public class Neuron {
 
 	public void newRand() {
 		this.rand = new Random();
+	}
+
+	public float[] getWeight() {
+		return weight;
+	}
+
+	public void setWeight(float[] weight) {
+		this.weight = weight;
+	}
+
+	public float getVal() {
+		return val;
+	}
+
+	public void setVal(float val) {
+		this.val = val;
+	}
+	
+	public void addToVal(float add) {
+		this.val += add;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
 	}
 }

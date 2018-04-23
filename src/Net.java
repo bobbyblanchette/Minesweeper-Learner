@@ -68,13 +68,13 @@ public class Net implements Comparable<Net> {
 	public float[] getOutput(float[] inputValues) {
 		// input value
 		for (int i = 0; i < inputValues.length; i++) {
-			net.get(0).get(i).val = inputValues[i];
+			net.get(0).get(i).setVal(inputValues[i]);
 		}
 		// process data
 		for (int l = 0; l < net.size() - 1; l++) {
 			for (int n = 0; n < net.get(l).size(); n++) {
 				for (int nln = 0; nln < net.get(l + 1).size(); nln++) {
-					net.get(l + 1).get(nln).val += net.get(l).get(n).getValue(nln);
+					net.get(l + 1).get(nln).addToVal(net.get(l).get(n).getValue(nln));
 				}
 			}
 		}
@@ -88,7 +88,7 @@ public class Net implements Comparable<Net> {
 		// reset neurons
 		for (ArrayList<Neuron> nn : net)
 			for (Neuron n : nn) 
-				n.val = 0f;
+				n.setVal(0f);
 		
 		return output;
 	}
