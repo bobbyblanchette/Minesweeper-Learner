@@ -1,6 +1,4 @@
 import java.awt.Dimension;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -16,13 +14,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
 
 
+@SuppressWarnings("serial")
 public class MainFrame extends JFrame implements Runnable {
 
-	private static final long serialVersionUID = 1L;
 	private Integer sizeX = 8;
 	private Integer sizeY = 8;
 	private Board board;
@@ -63,47 +60,46 @@ public class MainFrame extends JFrame implements Runnable {
 				float fitness = 0;
 				while (true) {
 					float[][] danger = new float[sizeY][sizeX];
-					for (int r = 0; r < danger.length; r++) {
-						for (int c = 0; c < danger[r].length; c++) {
-							if (!board.getElement(c, r).getHidden()) {
-								danger[r][c] = Integer.MAX_VALUE;
+					for (int y = 0; y < danger.length; y++) {
+						for (int x = 0; x < danger[y].length; x++) {
+							if (!board.getElement(x, y).getHidden()) {
+								danger[y][x] = Integer.MAX_VALUE;
 							} else {
 								float[] input = new float[8];
-								input[0] = board.eval(c - 1, r - 1);
-								input[1] = board.eval(c - 1, r);
-								input[2] = board.eval(c - 1, r + 1);
-								input[3] = board.eval(c, r - 1);
-								input[4] = board.eval(c, r + 1);
-								input[5] = board.eval(c + 1, r - 1);
-								input[6] = board.eval(c + 1, r);
-								input[7] = board.eval(c + 1, r + 1);
-								float d = net.getOutput(input)[0];
-								danger[r][c] = d;
+								input[0] = board.eval(x - 1, y - 1);
+								input[1] = board.eval(x - 1, y);
+								input[2] = board.eval(x - 1, y + 1);
+								input[3] = board.eval(x, y - 1);
+								input[4] = board.eval(x, y + 1);
+								input[5] = board.eval(x + 1, y - 1);
+								input[6] = board.eval(x + 1, y);
+								input[7] = board.eval(x + 1, y + 1);
+								danger[y][x] = net.getOutput(input)[0];
 							}
 						}
 					}
-					int lowR = 0;
-					float lowVal = Integer.MAX_VALUE;
-					int lowC = 0;
-					for (int r = 0; r < danger.length; r++) {
-						for (int c = 0; c < danger[r].length; c++) {
-							if (danger[r][c] < lowVal) {
-								lowR = r;
-								lowC = c;
-								lowVal = danger[r][c];
+					float lowestDanger = Integer.MAX_VALUE;
+					int lowestY = 0;
+					int lowestX = 0;
+					for (int y = 0; y < danger.length; y++) {
+						for (int x = 0; x < danger[y].length; x++) {
+							if (danger[y][x] < lowestDanger) {
+								lowestY = y;
+								lowestX = x;
+								lowestDanger = danger[y][x];
 							}
 						}
 					}
-					if (board.select(lowC, lowR)) {
+					if (board.select(lowestX, lowestY)) {
 						fitness += 1;
 					} else {
-						net.fitness = fitness;
+						net.setFitness(fitness);
 						totalFitness += fitness;
 						break;
 					}
 					if (board.check()) {
-						net.wins++;
-						System.out.println("Winner! Number of games won by this net: " + net.wins);
+						net.setWins(net.getWins() + 1);
+						System.out.println("Winner! Number of games won by this net: " + net.getWins());
 						writeNetToFile(net);
 						//showOff(net);
 						gen = new Generation(net);
@@ -136,38 +132,37 @@ public class MainFrame extends JFrame implements Runnable {
 		while (true) {
 			while (true) {
 				float[][] danger = new float[sizeY][sizeX];
-				for (int r = 0; r < danger.length; r++) {
-					for (int c = 0; c < danger[r].length; c++) {
-						if (!board.getElement(c, r).getHidden()) {
-							danger[r][c] = Integer.MAX_VALUE;
+				for (int y = 0; y < danger.length; y++) {
+					for (int x = 0; x < danger[y].length; x++) {
+						if (!board.getElement(x, y).getHidden()) {
+							danger[y][x] = Integer.MAX_VALUE;
 						} else {
 							float[] input = new float[8];
-							input[0] = board.eval(c - 1, r - 1);
-							input[3] = board.eval(c - 1, r);
-							input[5] = board.eval(c - 1, r + 1);
-							input[1] = board.eval(c, r - 1);
-							input[6] = board.eval(c, r + 1);
-							input[2] = board.eval(c + 1, r - 1);
-							input[4] = board.eval(c + 1, r);
-							input[7] = board.eval(c + 1, r + 1);
-							float d = net.getOutput(input)[0];
-							danger[r][c] = d;
+							input[0] = board.eval(x - 1, y - 1);
+							input[1] = board.eval(x - 1, y);
+							input[2] = board.eval(x - 1, y + 1);
+							input[3] = board.eval(x, y - 1);
+							input[4] = board.eval(x, y + 1);
+							input[5] = board.eval(x + 1, y - 1);
+							input[6] = board.eval(x + 1, y);
+							input[7] = board.eval(x + 1, y + 1);
+							danger[y][x] = net.getOutput(input)[0];
 						}
 					}
 				}
-				int lowR = 0;
-				float lowVal = Integer.MAX_VALUE;
-				int lowC = 0;
-				for (int r = 0; r < danger.length; r++) {
-					for (int c = 0; c < danger[r].length; c++) {
-						if (danger[r][c] < lowVal) {
-							lowR = r;
-							lowC = c;
-							lowVal = danger[r][c];
+				float lowestDanger = Integer.MAX_VALUE;
+				int lowestY = 0;
+				int lowestX = 0;
+				for (int y = 0; y < danger.length; y++) {
+					for (int x = 0; x < danger[y].length; x++) {
+						if (danger[y][x] < lowestDanger) {
+							lowestY = y;
+							lowestX = x;
+							lowestDanger = danger[y][x];
 						}
 					}
 				}
-				board.select(lowC, lowR);
+				board.select(lowestX, lowestY);
 				if (board.check()) {
 					break;
 				}

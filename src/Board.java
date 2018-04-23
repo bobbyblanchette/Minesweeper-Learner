@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -9,12 +10,8 @@ import java.util.stream.Stream;
 
 import javax.swing.JPanel;
 
+@SuppressWarnings("serial")
 public class Board extends JPanel {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
 
 	private final int w = 512;
 	private final int h = 512;
@@ -156,8 +153,8 @@ public class Board extends JPanel {
 		g.fillRect(0, 0, w, h);
 		g.setColor(Color.black);
 
-		g.setFont(g.getFont().deriveFont(g.getFont().getSize() * 2));
-		g.setFont(getFont().deriveFont(g.getFont().BOLD));
+		g.setFont(g.getFont().deriveFont(g.getFont().getSize() * 1.2f));
+		g.setFont(g.getFont().deriveFont(Font.BOLD));
 
 		for (int i = 1; i < sizeX + 1; i++) {
 			int x = (w / sizeX) * i;

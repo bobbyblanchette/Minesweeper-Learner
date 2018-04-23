@@ -8,9 +8,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Generation {
+	
 	private int populationSize = 100;
 	private float crossoverRate = 0.9f;
-	private float mutationRate = 0.05f;
+	private float mutationRate = 0.1f;
 	private List<Net> population = new ArrayList<>();
 	private Random rand = new Random();
 
@@ -42,7 +43,7 @@ public class Generation {
 		Net best = null;
 		for (int i = 0; i < size; i++) {
 			Net contestant = population.get(rand.nextInt(population.size()));
-			if (best == null || contestant.fitness > best.fitness) {
+			if (best == null || contestant.getFitness() > best.getFitness()) {
 				best = contestant;
 			}
 		}
@@ -51,14 +52,16 @@ public class Generation {
 	
 	private ArrayList<Net> crossover(Net p1, Net p2) {
 		ArrayList<Net> children = Stream.generate(() -> new Net(p1, p2)).limit(2).collect(Collectors.toCollection(ArrayList::new));
-		for (int l = 0; l < p1.net.length; l++) {
-			for (int n = 0; n < p1.net[l].length; n++) {
+		for (int l = 0; l < p1.getNet().size(); l++) {
+			children.get(0).getNet().add(new ArrayList<Neuron>());
+			children.get(1).getNet().add(new ArrayList<Neuron>());
+			for (int n = 0; n < p1.getNet().get(l).size(); n++) {
 				if (0.5 > rand.nextFloat()){
-					children.get(0).net[l][n] = new Neuron(p1.net[l][n]);
-					children.get(1).net[l][n] = new Neuron(p2.net[l][n]);
+					children.get(0).getNet().get(l).add(new Neuron(p1.getNet().get(l).get(n)));
+					children.get(1).getNet().get(l).add(new Neuron(p2.getNet().get(l).get(n)));
 				} else {
-					children.get(0).net[l][n] = new Neuron(p2.net[l][n]);
-					children.get(1).net[l][n] = new Neuron(p1.net[l][n]);
+					children.get(0).getNet().get(l).add(new Neuron(p2.getNet().get(l).get(n)));
+					children.get(1).getNet().get(l).add(new Neuron(p1.getNet().get(l).get(n)));
 				}
 			}
 		}
