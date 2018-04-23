@@ -30,10 +30,7 @@ public class Net implements Comparable<Net> {
 		for (int r = 0; r < net.length; r++) {
 			net[r] = new Neuron[p1.net[r].length];
 			for (int c = 0; c < net[r].length; c++) {
-				if (p1.fitness / p1.fitness + p2.fitness > rand.nextFloat())
-					net[r][c] = new Neuron(p1.net[r][c]);
-				else
-					net[r][c] = new Neuron(p2.net[r][c]);
+				net[r][c] = new Neuron();
 			}
 		}
 		wins = Math.max(p1.wins, p2.wins);
@@ -57,10 +54,14 @@ public class Net implements Comparable<Net> {
 		}
 	}
 
-	public void mutate() {
-		int r = rand.nextInt(hiddenDepth + 1);
-		int c = rand.nextInt(net[r].length);
-		net[r][c].mutate();
+	public Net mutate(float mutationRate) {
+		if (mutationRate < rand.nextFloat()) {
+			int r = rand.nextInt(hiddenDepth + 1);
+			int c = rand.nextInt(net[r].length);
+			net[r][c].mutate();
+			
+		}
+		return this;
 	}
 
 	public float[] getOutput(float[] inputValues) {
@@ -89,13 +90,14 @@ public class Net implements Comparable<Net> {
 		return output;
 	}
 	
-	public void newRand() {
+	public Net newRand() {
 		this.rand = new Random();
 		for (Neuron[] nn : net) {
 			for (Neuron n : nn) {
 				n.newRand();
 			}
 		}
+		return this;
 	}
 
 	public int compareTo(Net other) {

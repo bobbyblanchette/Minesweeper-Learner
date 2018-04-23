@@ -3,63 +3,66 @@ import java.util.Collections;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Random;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Generation {
-	private int populationSize = 10;
-	private int purgeRate = 3;
-	private float crossoverRate = 0.8f;
-	private float mutationRate = 0.3f;
+	private int populationSize = 100;
+	private float crossoverRate = 0.9f;
+	private float mutationRate = 0.05f;
 	private List<Net> population = new ArrayList<>();
 	private Random rand = new Random();
 
 	public Generation() {
-		for (int i = 0; i < populationSize; i++) {
-			Net network = new Net();
-			population.add(network);
-		}
+		population = Stream.generate(() -> new Net()).limit(populationSize).collect(Collectors.toCollection(ArrayList::new));
 	}
 	
 	public Generation(Net net) {
-		for (int i = 0; i < populationSize; i++) {
-			net.newRand();
-			population.add(net);
-		}
+		population = Stream.generate(() -> new Net(net)).limit(populationSize).collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	public void train() {
-		purge();
 		breed();
 	}
 
 	private void breed() {
-		int numChildren = populationSize - population.size();
-		Collections.sort(population);
-		
-		for (int i = population.size() - 1; numChildren >= 0; i--) {
+		List<Net> newGen = new ArrayList<Net>();
+		while (newGen.size() < populationSize) {
 			if (rand.nextFloat() < crossoverRate)
-				population.add(new Net(population.get(i), population.get(i - 1)));
+				for (Net child : crossover(tournament(4), tournament(4)))
+					newGen.add(child.mutate(mutationRate));
 			else
-				population.add(new Net(population.get(i)));
-			numChildren--;
+				newGen.add(tournament(10).mutate(mutationRate));
 		}
-		for (Net net : population)
-			if (rand.nextFloat() < mutationRate)
-					net.mutate();
+		population = newGen;
 	}
-
-	private void purge() {
-		PriorityQueue<Net> deathsRow = new PriorityQueue(purgeRate, Collections.reverseOrder());
-		for (Net net : population) {
-			if (deathsRow.size() < purgeRate) {
-				deathsRow.add(net);
-			} else if (net.compareTo(deathsRow.peek()) == -1) {
-				deathsRow.poll();
-				deathsRow.add(net);
+	
+	private Net tournament(int size) {
+		Net best = null;
+		for (int i = 0; i < size; i++) {
+			Net contestant = population.get(rand.nextInt(population.size()));
+			if (best == null || contestant.fitness > best.fitness) {
+				best = contestant;
 			}
 		}
-		while (deathsRow.size() > 0) {
-			population.remove(deathsRow.poll());
+		return best;
+	}
+	
+	private ArrayList<Net> crossover(Net p1, Net p2) {
+		ArrayList<Net> children = Stream.generate(() -> new Net(p1, p2)).limit(2).collect(Collectors.toCollection(ArrayList::new));
+		for (int l = 0; l < p1.net.length; l++) {
+			for (int n = 0; n < p1.net[l].length; n++) {
+				if (0.5 > rand.nextFloat()){
+					children.get(0).net[l][n] = new Neuron(p1.net[l][n]);
+					children.get(1).net[l][n] = new Neuron(p2.net[l][n]);
+				} else {
+					children.get(0).net[l][n] = new Neuron(p2.net[l][n]);
+					children.get(1).net[l][n] = new Neuron(p1.net[l][n]);
+				}
+			}
 		}
+		return children;
 	}
 
 	public int getPopulationSize() {
@@ -68,14 +71,6 @@ public class Generation {
 
 	public void setPopulationSize(int populationSize) {
 		this.populationSize = populationSize;
-	}
-
-	public int getPurgeRate() {
-		return purgeRate;
-	}
-
-	public void setPurgeRate(int purgeRate) {
-		this.purgeRate = purgeRate;
 	}
 
 	public List<Net> getPopulation() {

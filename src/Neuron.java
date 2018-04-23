@@ -30,8 +30,8 @@ public class Neuron {
 	}
 
 	public void mutate() {
-		int w = rand.nextInt(weight.length);
-		//for (int w = 0; w < weight.length; w++)
+		//int w = rand.nextInt(weight.length);
+		for (int w = 0; w < weight.length; w++)
 			weight[w] += delta * (rand.nextBoolean() ? 1 : -1);
 	}
 
